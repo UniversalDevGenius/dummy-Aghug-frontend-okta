@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <title>Demo</title>
+    <meta name="description" content=""/>
+    <meta name="viewport" content="width=device-width"/>
+    <base href="/"/>
+    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css"/>
+    <script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="/webjars/bootstrap/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <h1>Demo</h1>
+
+    <div class="alert alert-danger" id="error" style="display:none">
+        An error occurred. Please try again later.
+    </div>
+
+    <div class="alert alert-warning" id="loginFailure" style="display:none">
+        Login failed. Please try again.
+    </div>
+
+    <div class="alert alert-warning" id="accessDenied" style="display:none">
+        Access denied. You don't have permission to access this resource.
+    </div>
+
+    <div class="authenticated" style="display:none">
+        <p>Logged in as: <span id="user"></span></p>
+        <button onclick="logout()" class="btn btn-primary">Logout</button>
+    </div>
+
+    <div class="unauthenticated">
+        <p>Please log in to continue.</p>
+        <a href="/oauth2/authorization/okta" class="btn btn-primary">Login with Okta</a>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function showError(elementId) {
+        document.getElementById(elementId).style.display = 'block';
+    }
+
+    function logout() {
+        $.post("/logout", function() {
+            $("#user").html('');
+            $(".unauthenticated").show();
+            $(".authenticated").hide();
+        });
+        return true;
+    }
+
+    $.get("/user", function(data) {
+        $("#user").html(data.name);
+        $(".unauthenticated").hide();
+        $(".authenticated").show();
+    }).fail(function() {
+        $(".unauthenticated").show();
+        $(".authenticated").hide();
+    });
+
+    // Check for error messages in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('error') === 'true') {
+        showError('error');
+    } else if (urlParams.get('loginFailure') === 'true') {
+        showError('loginFailure');
+    } else if (urlParams.get('accessDenied') === 'true') {
+        showError('accessDenied');
+    }
+</script>
+</body>
+</html>
